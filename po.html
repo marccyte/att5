@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Order UI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-6 font-sans">
+  <div class="flex gap-6">
+    <div class="w-3/4 border border-gray-300 rounded-lg p-6">
+      <h2 class="text-xl font-bold mb-4">Menu</h2>
+      <div class="grid grid-cols-4 gap-4" id="menu">
+        <!-- Items will be rendered here -->
+      </div>
+    </div>
+    <div class="w-1/4 border border-gray-300 rounded-lg p-6">
+      <h3 class="text-xl font-bold mb-4">Ordered Items</h3>
+      <div id="orders" class="space-y-3"></div>
+      <p id="total" class="font-bold text-lg mt-4">Total: 0 PHP</p>
+      <input id="payment" type="number" value="100" class="w-full mt-2 p-2 border border-gray-300 rounded">
+      <button onclick="payOrder()" class="bg-green-500 text-white mt-2 py-2 px-4 rounded float-right">Pay!</button>
+    </div>
+  </div>
+
+  <script>
+    const items = [
+      { name: 'Burger', price: 60, image: 'https://via.placeholder.com/150x120?text=Burger' },
+      { name: 'Fishbol', price: 20, image: 'https://via.placeholder.com/150x120?text=Fishbol' },
+      { name: 'Kwek-kwek', price: 25, image: 'https://via.placeholder.com/150x120?text=Kwek-kwek' },
+      { name: 'Kikiam', price: 20, image: 'https://via.placeholder.com/150x120?text=Kikiam' }
+    ];
+
+    const menu = document.getElementById('menu');
+    const orders = {};
+
+    function renderMenu() {
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'border border-gray-300 rounded-lg p-4 text-center';
+        div.innerHTML = `
+          <img src="${item.image}" alt="${item.name}" class="w-full h-28 object-cover rounded-md">
+          <h3 class="text-lg font-semibold mt-2">${item.name}</h3>
+          <p class="text-gray-700">${item.price} PHP</p>
+          <input type="number" value="1" min="1" class="qty w-full mt-2 p-1 border border-gray-300 rounded">
+          <button class="add bg-blue-500 text-white w-full mt-2 py-1 rounded">Add to order</button>
+        `;
+
+        div.querySelector('.add').addEventListener('click', () => {
+          const qty = parseInt(div.querySelector('.qty').value);
+          if (!orders[item.name]) {
+            orders[item.name] = 0;
+          }
+          orders[item.name] += qty;
+          renderOrders();
+        });
+
+        menu.appendChild(div);
+      });
+    }
+
+    function renderOrders() {
+      const ordersDiv = document.getElementById('orders');
+      const totalDiv = document.getElementById('total');
+      ordersDiv.innerHTML = '';
+      let total = 0;
+
+      for (const [name, qty] of Object.entries(orders)) {
+        const item = items.find(i => i.name === name);
+        total += qty * item.price;
+
+        const div = document.createElement('div');
+        div.className = 'border border-gray-300 rounded-md p-3';
+        div.innerHTML = `
+          <strong>${name}</strong>
+          <p class="text-green-600">Qty: ${qty}</p>
+        `;
+        ordersDiv.appendChild(div);
+      }
+
+      totalDiv.textContent = `Total: ${total} PHP`;
+    }
+
+    function payOrder() {
+      const payment = parseFloat(document.getElementById('payment').value);
+      const total = Object.entries(orders).reduce((sum, [name, qty]) => {
+        const item = items.find(i => i.name === name);
+        return sum + qty * item.price;
+      }, 0);
+
+      if (payment >= total) {
+        alert(`Payment accepted. Change: ${payment - total} PHP`);
+      } else {
+        alert('Insufficient payment.');
+      }
+    }
+
+    renderMenu();
+  </script>
+</body>
+</html>
